@@ -2,6 +2,7 @@ package database
 
 import (
 	"encoding/json"
+
 	"github.com/scorum/bitshares-go/caller"
 	"github.com/scorum/bitshares-go/types"
 )
@@ -135,6 +136,12 @@ func (api *API) LookupAccounts(lowerBoundName string, limit uint16) (AccountsMap
 	var resp AccountsMap
 	err := api.call("lookup_accounts", []interface{}{lowerBoundName, limit}, &resp)
 	return resp, err
+}
+
+func (api *API) GetAccountByName(name string) (*AccountObject, error) {
+	var resp AccountObject
+	err := api.call("get_account_by_name", []interface{}{name}, &resp)
+	return &resp, err
 }
 
 // SetBlockAppliedCallback registers a global subscription callback

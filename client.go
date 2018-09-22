@@ -2,6 +2,10 @@ package bitshares
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"log"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/scorum/bitshares-go/apis/database"
@@ -12,8 +16,6 @@ import (
 	"github.com/scorum/bitshares-go/sign"
 	"github.com/scorum/bitshares-go/transport/websocket"
 	"github.com/scorum/bitshares-go/types"
-	"log"
-	"time"
 )
 
 type Client struct {
@@ -35,7 +37,7 @@ type Client struct {
 }
 
 // NewClient creates a new RPC client
-func NewClient(url string) (*Client, error) {
+func NewClient(url, username, password string) (*Client, error) {
 	// transport
 	transport, err := websocket.NewTransport(url)
 	if err != nil {
@@ -47,7 +49,14 @@ func NewClient(url string) (*Client, error) {
 	// login
 	loginAPI := login.NewAPI(transport)
 	client.Login = loginAPI
-
+	if username != "" {
+		if ok, err := client.Login.Login(username, password); !ok {
+			if err != nil {
+				return nil, err
+			}
+			return nil, fmt.Errorf("Failed to login")
+		}
+	}
 	// database
 	databaseAPIID, err := loginAPI.Database()
 	if err != nil {

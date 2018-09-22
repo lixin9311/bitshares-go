@@ -2,6 +2,8 @@ package database
 
 import (
 	"encoding/json"
+	"fmt"
+
 	"github.com/scorum/bitshares-go/types"
 )
 
@@ -11,6 +13,41 @@ type Asset struct {
 	Precision          uint8          `json:"precision"`
 	Issuer             string         `json:"issuer"`
 	DynamicAssetDataID string         `json:"dynamic_asset_data_id"`
+}
+
+type keyAuths struct {
+	Key    string
+	Weight int
+}
+
+func (k *keyAuths) UnmarshalJSON(b []byte) error {
+	var tmp []interface{}
+	if err := json.Unmarshal(b, &tmp); err != nil {
+		return err
+	}
+	if len(tmp) != 2 {
+		return fmt.Errorf("Wrong length: %v", tmp)
+	}
+	for _, v := range tmp {
+		switch t := v.(type) {
+		case string:
+			k.Key = t
+		case float64:
+			k.Weight = int(t)
+		default:
+			return fmt.Errorf("Wrong type: %v", tmp)
+		}
+	}
+	return nil
+}
+
+type AccountObject struct {
+	Active struct {
+		KeyAuths []keyAuths `json:"key_auths"`
+	} `json:"active"`
+	Owner struct {
+		KeyAuths []keyAuths `json:"key_auths"`
+	} `json:"owner"`
 }
 
 type BlockHeader struct {
